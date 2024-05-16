@@ -38,7 +38,7 @@ const getOwner = async (): Promise<string> => {
   const owner = await contract.owner()
   return owner
 }
-
+*/
 const getGames = async (): Promise<GameStruct[]> => {
   const contract = await getEthereumContracts()
   const games = await contract.getGames()
@@ -63,16 +63,81 @@ const getInvitations = async (gameId: number): Promise<InvitationStruct[]> => {
   return structuredInvitations(invitation)
 }
 
-const getMyInvitations = async (): Promise<InvitationStruct[]> => {
-  const contract = await getEthereumContracts()
-  const invitation = await contract.getMyInvitations()
-  return structuredInvitations(invitation)
-}
-
 const getScores = async (gameId: number): Promise<ScoreStruct[]> => {
   const contract = await getEthereumContracts()
   const scores = await contract.getScores(gameId)
   return structuredScores(scores)
+}
+
+const structuredGames = (games: GameStruct[]): GameStruct[] =>
+  games
+    .map((game) => ({
+      id: Number(game.id),
+      title: game.title,
+      participants: Number(game.participants),
+      numberOfWinners: Number(game.numberOfWinners),
+      acceptees: Number(game.acceptees),
+      stake: parseFloat(fromWei(game.stake)),
+      owner: game.owner,
+      description: game.description,
+      startDate: Number(game.startDate),
+      endDate: Number(game.endDate),
+      timestamp: Number(game.timestamp),
+      deleted: game.deleted,
+      paidOut: game.paidOut,
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp)
+
+const structuredInvitations = (invitations: InvitationStruct[]): InvitationStruct[] =>
+  invitations
+    .map((invitation) => ({
+      id: Number(invitation.id),
+      gameId: Number(invitation.gameId),
+      title: invitation.title,
+      sender: invitation.sender,
+      receiver: invitation.receiver,
+      stake: parseFloat(fromWei(invitation.stake)),
+      accepted: invitation.accepted,
+      responded: invitation.responded,
+      timestamp: Number(invitation.timestamp),
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp)   
+
+    const structuredScores = (scores: ScoreStruct[]): ScoreStruct[] =>
+      scores
+        .map((score) => ({
+          id: Number(score.id),
+          gameId: Number(score.gameId),
+          player: score.player,
+          prize: parseFloat(fromWei(score.prize)),
+          score: Number(score.score),
+          played: score.played,
+        }))
+        .sort((a, b) => a.score - b.score)
+    
+    export {
+      //getOwner,
+      getGames,
+      getMyGames,
+      getGame,
+      getScores,
+      getInvitations,
+      //getMyInvitations,
+      //respondToInvite,
+      //createGame,
+      //invitePlayer,
+      //saveScore,
+      //payout,
+      //deleteGame,
+    }
+
+
+
+/*
+const getMyInvitations = async (): Promise<InvitationStruct[]> => {
+  const contract = await getEthereumContracts()
+  const invitation = await contract.getMyInvitations()
+  return structuredInvitations(invitation)
 }
 
 const createGame = async (game: GameParams): Promise<void> => {
@@ -219,65 +284,4 @@ const respondToInvite = async (
   }
 }
 
-const structuredGames = (games: GameStruct[]): GameStruct[] =>
-  games
-    .map((game) => ({
-      id: Number(game.id),
-      title: game.title,
-      participants: Number(game.participants),
-      numberOfWinners: Number(game.numberOfWinners),
-      acceptees: Number(game.acceptees),
-      stake: parseFloat(fromWei(game.stake)),
-      owner: game.owner,
-      description: game.description,
-      startDate: Number(game.startDate),
-      endDate: Number(game.endDate),
-      timestamp: Number(game.timestamp),
-      deleted: game.deleted,
-      paidOut: game.paidOut,
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp)
-
-const structuredInvitations = (invitations: InvitationStruct[]): InvitationStruct[] =>
-  invitations
-    .map((invitation) => ({
-      id: Number(invitation.id),
-      gameId: Number(invitation.gameId),
-      title: invitation.title,
-      sender: invitation.sender,
-      receiver: invitation.receiver,
-      stake: parseFloat(fromWei(invitation.stake)),
-      accepted: invitation.accepted,
-      responded: invitation.responded,
-      timestamp: Number(invitation.timestamp),
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp)
-
-const structuredScores = (scores: ScoreStruct[]): ScoreStruct[] =>
-  scores
-    .map((score) => ({
-      id: Number(score.id),
-      gameId: Number(score.gameId),
-      player: score.player,
-      prize: parseFloat(fromWei(score.prize)),
-      score: Number(score.score),
-      played: score.played,
-    }))
-    .sort((a, b) => a.score - b.score)
-
-export {
-  getOwner,
-  getGames,
-  getMyGames,
-  getGame,
-  getScores,
-  getInvitations,
-  getMyInvitations,
-  respondToInvite,
-  createGame,
-  invitePlayer,
-  saveScore,
-  payout,
-  deleteGame,
-}
 */
