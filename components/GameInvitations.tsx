@@ -4,6 +4,7 @@ import { truncate } from '@/utils/helper'
 import Identicon from 'react-identicons'
 import { toast } from 'react-toastify'
 import { useAccount } from 'wagmi'
+import { respondToInvite } from '@/services/blockchain'
 import Link from 'next/link'
 
 interface ComponentProps {
@@ -21,7 +22,12 @@ const GameInvitations: React.FC<ComponentProps> = ({ invitations, game, label })
 
     await toast.promise(
       new Promise<void>((resolve, reject) => {
-        //...
+        respondToInvite(accept, invitation, index)
+          .then((tx) => {
+            console.log(tx)
+            resolve(tx)
+          })
+          .catch((error) => reject(error))
       }),
       {
         pending: 'Approve transaction...',

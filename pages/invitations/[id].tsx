@@ -1,8 +1,7 @@
 import GameInvitations from '@/components/GameInvitations'
 import InviteModal from '@/components/InviteModal'
-import { getInvitations } from '@/services/blockchain'
+import { getGame, getInvitations } from '@/services/blockchain'
 import { globalActions } from '@/store/globalSlices'
-import { generateGameData, generateInvitations } from '@/utils/fakeData'
 import { GameStruct, InvitationStruct, RootState } from '@/utils/type.dt'
 import { GetServerSidePropsContext, NextPage } from 'next'
 import Head from 'next/head'
@@ -18,7 +17,7 @@ interface PageProps {
 const Page: NextPage<PageProps> = ({ gameData, invitationsData }) => {
   const { address } = useAccount()
   const dispatch = useDispatch()
-  const { setGame, setInvitations } = globalActions
+  const { setGame, setInvitations, setInviteModal } = globalActions
   const { game, invitations } = useSelector((states: RootState) => states.globalStates)
 
   useEffect(() => {
@@ -37,6 +36,7 @@ const Page: NextPage<PageProps> = ({ gameData, invitationsData }) => {
       <div className="flex justify-center space-x-2">
         {address === game?.owner && (
           <button
+            onClick={() => dispatch(setInviteModal('scale-100'))}
             className="bg-transparent border border-orange-700 hover:bg-orange-800
             py-2 px-6 text-orange-700 hover:text-white rounded-full
             transition duration-300 ease-in-out"
@@ -54,7 +54,7 @@ export default Page
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const { id } = context.query
-  const gameData: GameStruct = generateGameData(Number(id))[0]
+  const gameData: GameStruct = await getGame(Number(id))
   const invitationsData: InvitationStruct[] = await getInvitations(Number(id))
   return {
     props: {
