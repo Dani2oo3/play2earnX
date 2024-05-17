@@ -12,7 +12,7 @@ let ethereum: any
 let tx: any
 
 if (typeof window !== 'undefined') ethereum = (window as any).ethereum
-const { setGames, setInvitations } = globalActions
+const { setGames, setInvitations, setScores } = globalActions
 
 const getEthereumContracts = async () => {
   const accounts = await ethereum?.request?.({ method: 'eth_accounts' })
@@ -32,13 +32,13 @@ const getEthereumContracts = async () => {
     return contracts
   }
 }
-/*
+
 const getOwner = async (): Promise<string> => {
   const contract = await getEthereumContracts()
   const owner = await contract.owner()
   return owner
 }
-*/
+
 const getGames = async (): Promise<GameStruct[]> => {
   const contract = await getEthereumContracts()
   const games = await contract.getGames()
@@ -171,6 +171,69 @@ const respondToInvite = async (
   }
 }
 
+const playGame = async (gameId: number, index: number, score: number): Promise<void> => {
+  if (!ethereum) {
+    reportError('Please install a browser provider')
+    return Promise.reject(new Error('Browser provider not installed'))
+  }
+
+  try {
+    const contract = await getEthereumContracts()
+    tx = await contract.playGame(gameId, index, score)
+    await tx.wait()
+
+    const scores: ScoreStruct[] = await getScores(gameId)
+    store.dispatch(setScores(scores))
+
+    return Promise.resolve(tx)
+  } catch (error) {
+    reportError(error)
+    return Promise.reject(error)
+  }
+}
+
+const payout = async (gameId: number): Promise<void> => {
+  if (!ethereum) {
+    reportError('Please install a browser provider')
+    return Promise.reject(new Error('Browser provider not installed'))
+  }
+
+  try {
+    const contract = await getEthereumContracts()
+    tx = await contract.payout(gameId)
+    await tx.wait()
+
+    const scores: ScoreStruct[] = await getScores(gameId)
+    store.dispatch(setScores(scores))
+
+    return Promise.resolve(tx)
+  } catch (error) {
+    reportError(error)
+    return Promise.reject(error)
+  }
+}
+
+const saveScore = async (gameId: number, index: number, score: number): Promise<void> => {
+  if (!ethereum) {
+    reportError('Please install a browser provider')
+    return Promise.reject(new Error('Browser provider not installed'))
+  }
+
+  try {
+    const contract = await getEthereumContracts()
+    tx = await contract.saveScore(gameId, index, score)
+    await tx.wait()
+
+    const scores: ScoreStruct[] = await getScores(gameId)
+    store.dispatch(setScores(scores))
+
+    return Promise.resolve(tx)
+  } catch (error) {
+    reportError(error)
+    return Promise.reject(error)
+  }
+}
+
 const getMyInvitations = async (): Promise<InvitationStruct[]> => {
   const contract = await getEthereumContracts()
   const invitation = await contract.getMyInvitations()
@@ -224,7 +287,7 @@ const structuredScores = (scores: ScoreStruct[]): ScoreStruct[] =>
     .sort((a, b) => a.score - b.score)
 
 export {
-  //getOwner,
+  getOwner,
   getGames,
   getMyGames,
   getGame,
@@ -234,55 +297,8 @@ export {
   respondToInvite,
   createGame,
   invitePlayer,
-  //saveScore,
-  //payout,
+  saveScore,
+  payout,
   deleteGame,
+  playGame,
 }
-
-
-
-/*
-
-const saveScore = async (gameId: number, index: number, score: number): Promise<void> => {
-  if (!ethereum) {
-    reportError('Please install a browser provider')
-    return Promise.reject(new Error('Browser provider not installed'))
-  }
-
-  try {
-    const contract = await getEthereumContracts()
-    tx = await contract.saveScore(gameId, index, score)
-    await tx.wait()
-
-    const scores: ScoreStruct[] = await getScores(gameId)
-    store.dispatch(setScores(scores))
-
-    return Promise.resolve(tx)
-  } catch (error) {
-    reportError(error)
-    return Promise.reject(error)
-  }
-}
-
-const payout = async (gameId: number): Promise<void> => {
-  if (!ethereum) {
-    reportError('Please install a browser provider')
-    return Promise.reject(new Error('Browser provider not installed'))
-  }
-
-  try {
-    const contract = await getEthereumContracts()
-    tx = await contract.payout(gameId)
-    await tx.wait()
-
-    const scores: ScoreStruct[] = await getScores(gameId)
-    store.dispatch(setScores(scores))
-
-    return Promise.resolve(tx)
-  } catch (error) {
-    reportError(error)
-    return Promise.reject(error)
-  }
-}
-
-*/
